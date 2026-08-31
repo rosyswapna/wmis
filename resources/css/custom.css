@@ -1,0 +1,23 @@
+.bg-orange-800{
+    background-color: #F06D22;
+}
+
+.bg-orange-700{
+    background-color: rgb(250, 130, 61);
+}
+
+.bg-nblue-800{
+    background-color: #334155;
+}
+
+.bg-nblue-600{
+    background-color: #445368;
+}
+
+.bg-nblue-300{
+    background-color: #c1ccdd;
+}
+
+.border-dashboard-tile{
+    border: 1px solid #a5b1c3;
+}
