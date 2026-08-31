@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div x-data="{ filterOpen: false }" class="py-8">
+    <div x-data="{ filterOpen: {{ request()->hasAny(['worker_name', 'date_from', 'date_to']) ? 'true' : 'false' }} }" class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">        
 
             @if (session('success'))
@@ -62,72 +62,65 @@
                         x-cloak
                         class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
 
-                        <div class="flex items-end gap-3">
+                        <form method="GET" action="{{ route('reports.workers') }}">
 
-                            <!-- From Date -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    From Date
-                                </label>
 
-                                <input type="date"
-                                    id="date_from"
-                                    class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                            </div>
+                            <div class="flex items-end gap-3">
+                                <!-- Worker Name -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Worker Name
+                                    </label>
 
-                            <!-- To Date -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    To Date
-                                </label>
-
-                                <input type="date"
-                                    id="date_to"
-                                    class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                            </div>
-
-                            <!-- Client -->
-                            <div class="w-56">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Client
-                                </label>
-
-                                <select id="client_id"
+                                    <input type="text"
+                                        id="worker_name" name="worker_name"
+                                        value="{{ request('worker_name') }}"
                                         class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                                    <option value="">All Clients</option>
-                                </select>
-                            </div>
+                                </div>
 
-                            <!-- Status -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Status
-                                </label>
 
-                                <select id="status_id"
+                                <!-- From Date -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        From Date
+                                    </label>
+
+                                    <input type="date"
+                                        id="date_from" name="date_from"
+                                        value="{{ request('date_from') }}"
                                         class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                                    <option value="">All Status</option>
-                                </select>
+                                </div>
+
+                                <!-- To Date -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        To Date
+                                    </label>
+
+                                    <input type="date"
+                                        id="date_to" name="date_to"
+                                        value="{{ request('date_to') }}"
+                                        class="mt-1 block w-full h-9 rounded-md border-gray-300">
+                                </div>
+
+                                <!-- Filter -->
+                                <button type="submit"
+                                        id="search-btn"
+                                        class="h-9 px-4 bg-indigo-600 text-white rounded-md
+                                            hover:bg-indigo-700">
+                                    <i class="fas fa-search mr-1"></i>
+                                    Search
+                                </button>
+
+                                <!-- Reset -->
+                                <a href="{{ route('reports.workers') }}"
+                                class="h-9 pt-2 px-4 bg-gray-200 text-gray-700 rounded-md
+                                            hover:bg-gray-300">
+                                    Clear
+                                </a>
+
                             </div>
-
-                            <!-- Filter -->
-                            <button type="button"
-                                    id="filter-btn"
-                                    class="h-9 px-4 bg-indigo-600 text-white rounded-md
-                                        hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-1"></i>
-                                Filter
-                            </button>
-
-                            <!-- Reset -->
-                            <button type="button"
-                                    id="reset-filter"
-                                    class="h-9 px-4 bg-gray-200 text-gray-700 rounded-md
-                                        hover:bg-gray-300">
-                                Reset
-                            </button>
-
-                        </div>
+                        </form>
 
                     </div>
 

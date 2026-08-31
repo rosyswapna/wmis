@@ -14,7 +14,7 @@ class ReportController extends Controller
     /**
      * Display workers report.
      */
-    public function workers()
+    public function workers(Request $request)
     {
 
         $reportColumns = [
@@ -27,6 +27,7 @@ class ReportController extends Controller
         ];
         $reportData = InvoiceItem::query()
             ->join('invoice', 'invoice.id', '=', 'invoice_item.invoice_id')
+            ->join('invoice_status', 'invoice.status_id', '=', 'invoice_status.id')
             ->join('client', 'client.id', '=', 'invoice.client_id')
             ->join('service', 'service.id', '=', 'invoice.service_id')
             ->select([
@@ -44,6 +45,33 @@ class ReportController extends Controller
                 'service.name as service',
                 'invoice.unit_price as amount',
             ])
+            ->whereNotIn('invoice_status.name', ['Draft', 'Cancelled'])
+            // Worker Name
+            ->when($request->filled('worker_name'), function ($query) use ($request) {
+                $query->where(
+                    'invoice_item.worker_name',
+                    'like',
+                    '%' . $request->worker_name . '%'
+                );
+            })
+
+            // From Date
+            ->when($request->filled('date_from'), function ($query) use ($request) {
+                $query->whereDate(
+                    'invoice.invoice_date',
+                    '>=',
+                    $request->date_from
+                );
+            })
+
+            // To Date
+            ->when($request->filled('date_to'), function ($query) use ($request) {
+                $query->whereDate(
+                    'invoice.invoice_date',
+                    '<=',
+                    $request->date_to
+                );
+            })
             ->orderBy('invoice.invoice_date', 'desc')
             ->paginate(10);
 
