@@ -67,10 +67,13 @@ class DashboardController extends Controller
         }
 
         $sales = Invoice::select(
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+                DB::raw("DATE_FORMAT(invoice_date, '%Y-%m') as month"),
                 DB::raw('SUM(total) as total')
             )
             ->where('invoice_date', '>=', now()->subMonths(11)->startOfMonth())
+            ->whereHas('status', function ($query) {
+                $query->whereNotIn('name', ['Draft', 'Cancelled']);
+            })
             ->groupBy('month')
             ->orderBy('month')
             ->get();
