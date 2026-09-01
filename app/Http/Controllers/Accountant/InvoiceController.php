@@ -10,22 +10,45 @@ use App\Models\Service;
 use App\Models\Hospital;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\InvoiceListService;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\InvoiceExport;
 
 class InvoiceController extends Controller
 {
+
+    protected InvoiceListService $invoiceListService;
+
+    public function __construct(InvoiceListService $invoiceListService)
+    {
+        $this->invoiceListService = $invoiceListService;
+    }
+
     /**
      * Display invoice list.
      */
-    public function index()
+    public function index(Request  $request)
     {
-        $invoices = Invoice::with('client')
-            ->latest('invoice_date')
-            ->paginate(10);
+        $clients = Client::orderBy('name')->get();
+        $statuses = InvoiceStatus::orderBy('name')->get();
 
-        return view('invoice.index', compact('invoices'));
+        $filters = $request->only([
+            'status_id',
+            'client_id',
+            'date_from',
+            'date_to',
+        ]);        
+        $invoices = $this->invoiceListService
+            ->query($filters)
+            ->paginate(10)
+            ->withQueryString(); 
+
+
+        return view('invoice.index', compact('invoices','clients','statuses'));
     }
 
     /**
@@ -101,12 +124,14 @@ class InvoiceController extends Controller
                         });
                     }),
             ]; 
-            $invoice_number = $request->invoice_number;             
+            $invoice_number = $request->invoice_number;  
+            $invoicePrefix = $invoiceSuffix = null;         
         }else{        
             $invoicePrefix = Hospital::pluck('invoice_number_prefix')->first();
             $invoice_number = $this->generateInvoiceNumber();
             $invoiceSuffix = now()->format('Y');
         }
+        
 
         $validator = Validator::make($request->all(), $validations);
         if ($validator->fails()) {
@@ -117,7 +142,7 @@ class InvoiceController extends Controller
         }else{
             $validated = $validator->validated();            
             
-            DB::transaction(function () use ($validated, $invoice_number) {            
+            DB::transaction(function () use ($validated, $invoice_number,$invoicePrefix,$invoiceSuffix) {            
                 
                 $discount = $validated['discount'] ?? 0;
                 $quantity = count($validated['items']);
@@ -378,6 +403,64 @@ class InvoiceController extends Controller
             'message' => 'Invoice saved as draft.',
             'redirect' => route('invoices'),
         ]);
+    }
+
+    /**
+     * Export invoices.
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only([
+            'invoice_number',
+            'client_id',
+            'service_id',
+            'status_id',
+            'date_from',
+            'date_to',
+        ]);
+
+        // Use the same query logic as invoice listing
+        $query = $this->invoiceListService->query($filters);
+
+        $reportHeaders = [
+            'Invoice Number',
+            'Invoice Date',
+            'Client',
+            'Service',
+            'Quantity',
+            'VAT',
+            'Total',
+            'Status',
+        ];
+
+        $reportDataKeys = [
+            'invoice_number',
+            'invoice_date',
+            'client.name',
+            'service.name',
+            'quantity',
+            'vat',
+            'total',
+            'status.name',
+        ];
+
+        $fileName = 'invoices-' . now()->format('Y-m-d-His') . '.xlsx';
+
+        $filePath = 'export/invoices/' . $fileName;
+
+        Excel::store(
+            new InvoiceExport(
+                $query,
+                $reportHeaders,
+                $reportDataKeys
+            ),
+            $filePath
+        );
+
+        return Storage::download(
+            $filePath,
+            $fileName
+        );
     }
 
     /**

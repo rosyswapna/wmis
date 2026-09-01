@@ -86,6 +86,7 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
     Route::get('/accountant/invoices/print/{id}', [InvoiceController::class, 'print'])->name('invoices.print');
     Route::delete('/accountant/invoices/cancel/{id}', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
     Route::post('/accountant/invoices/draft', [InvoiceController::class, 'draft'])->name('invoices.draft');
+    Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
     
     Route::get('/accountant/reports/workers', [ReportController::class, 'workers'])->name('reports.workers');
 

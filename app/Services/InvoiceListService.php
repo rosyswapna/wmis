@@ -1,23 +1,18 @@
 <?php
 
-namespace App\Services\Reports;
+namespace App\Services;
 
-use App\Models\InvoiceItem;
+use App\Models\Invoice;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-class WorkersReportService
+class InvoiceListService
 {
     public function query(array $filters): Builder
     {
-        return InvoiceItem::query()
-            ->join('invoice', 'invoice.id', '=', 'invoice_item.invoice_id')
-            ->join('client', 'client.id', '=', 'invoice.client_id')
-            ->join('service', 'service.id', '=', 'invoice.service_id')
-            ->join('invoice_status', 'invoice_status.id', '=', 'invoice.status_id')
-
-            ->select([
-                'invoice_item.worker_name',
+        return Invoice::with([ 'client', 'service', 'status', ])  
+            ->select([ 
+                'id', 
                 DB::raw("
                     CONCAT(
                         COALESCE(invoice_number_prefix, ''),
@@ -37,23 +32,13 @@ class WorkersReportService
                         COALESCE(invoice_number_suffix, '')
                     ) AS invoice_number
                 "),
-                'invoice.invoice_date',
-                'client.name as client',
-                'service.name as service',
-                'invoice.unit_price as amount',
-            ])
-            ->whereNotIn('invoice_status.name',['Draft','Cancelled'])
-
-            ->when(
-                !empty($filters['worker_name']),
-                fn ($query) =>
-                    $query->where(
-                        'invoice_item.worker_name',
-                        'like',
-                        '%' . $filters['worker_name'] . '%'
-                    )
-            )
-
+                'invoice_date', 
+                'client_id', 
+                'service_id', 
+                'quantity', 
+                'vat', 
+                'total', 
+                'status_id', ])          
             ->when(
                 !empty($filters['date_from']),
                 fn ($query) =>
@@ -63,7 +48,6 @@ class WorkersReportService
                         $filters['date_from']
                     )
             )
-
             ->when(
                 !empty($filters['date_to']),
                 fn ($query) =>
@@ -73,19 +57,25 @@ class WorkersReportService
                         $filters['date_to']
                     )
             )
-
-            ->orderBy('invoice.invoice_date', 'desc');
+            ->when(
+                !empty($filters['client_id']),
+                fn ($query) =>
+                    $query->where(
+                        'client_id',
+                        '=',
+                        $filters['client_id']
+                    )
+            )
+            ->when(
+                !empty($filters['status_id']),
+                fn ($query) =>
+                    $query->where(
+                        'status_id',
+                        '=',
+                        $filters['status_id']
+                    )
+            )
+           ->orderBy('invoice_date', 'desc');
     }
-
-    public function columns()
-    {
-        return [
-            'worker_name'=>'Worker Name',
-            'invoice_number'=>'Invoice Number',
-            'invoice_date'=>'Invoice Date',
-            'client'=>'Client',
-            'service'=>'Service',
-            'amount'=>'Amount',
-        ];
-    }
+    
 }

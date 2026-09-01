@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div x-data="{ filterOpen: false }" class="py-8">
+    <div x-data="{ filterOpen: {{ request()->hasAny(['client_id', 'status_id','date_from', 'date_to']) ? 'true' : 'false' }} }" class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">        
 
             @if (session('success'))
@@ -45,14 +45,15 @@
                                 <i class="fas fa-filter"></i>
                             </button>
 
-                            <button type="button"
-                                    class="inline-flex items-center justify-center
-                                        w-9 h-9 rounded-md px-4 py-2
-                                        text-gray-600 hover:text-gray-900
-                                        hover:bg-gray-100">
+                            <a href="{{ route('invoices.export', request()->query()) }}"
+                            class="inline-flex items-center justify-center
+                                    w-9 h-9 rounded-md px-4 py-2
+                                    text-gray-600 hover:text-gray-900
+                                    hover:bg-gray-100"
+                            title="Export Excel">
 
                                 <i class="fas fa-file-export"></i>
-                            </button> 
+                            </a>
                             
 
                             <x-table-link href="{{ route('invoices.create') }}">
@@ -68,72 +69,91 @@
                         x-cloak
                         class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
 
-                        <div class="flex items-end gap-3">
+                        <form method="GET" action="{{ route('invoices') }}">
 
-                            <!-- From Date -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    From Date
-                                </label>
+                            <div class="flex items-end gap-3">
 
-                                <input type="date"
-                                    id="date_from"
-                                    class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                            </div>
+                                <!-- From Date -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        From Date
+                                    </label>
 
-                            <!-- To Date -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    To Date
-                                </label>
-
-                                <input type="date"
-                                    id="date_to"
-                                    class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                            </div>
-
-                            <!-- Client -->
-                            <div class="w-56">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Client
-                                </label>
-
-                                <select id="client_id"
+                                    <input type="date"
+                                        id="date_from" name="date_from"
+                                        value="{{ request('date_from') }}"
                                         class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                                    <option value="">All Clients</option>
-                                </select>
-                            </div>
+                                </div>
 
-                            <!-- Status -->
-                            <div class="w-48">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Status
-                                </label>
+                                <!-- To Date -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        To Date
+                                    </label>
 
-                                <select id="status_id"
+                                    <input type="date"
+                                        id="date_to" name="date_to"
+                                        value="{{ request('date_to') }}"
                                         class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                                    <option value="">All Status</option>
-                                </select>
+                                </div>
+
+                                <!-- Client -->
+                                <div class="w-56">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Client
+                                    </label>
+
+                                    <select id="client_id" name="client_id"
+                                            class="mt-1 block w-full h-9 rounded-md border-gray-300">
+                                        <option value="">Select Client</option>
+                                        @foreach($clients as $client)
+                                            <option value="{{ $client->id }}" 
+                                                {{ request('client_id') == $client->id ? 'selected' : '' }}
+                                            >
+                                                {{ $client->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="w-48">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Status
+                                    </label>
+
+                                    <select id="status_id" name="status_id"
+                                            class="mt-1 block w-full h-9 rounded-md border-gray-300">
+                                        <option value="">Select Status</option>
+                                        @foreach($statuses as $status)
+                                            <option value="{{ $status->id }}"
+                                                {{ request('status_id') == $status->id ? 'selected' : '' }}
+                                            >
+                                                {{ $status->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
 
-                            <!-- Filter -->
-                            <button type="button"
-                                    id="filter-btn"
-                                    class="h-9 px-4 bg-indigo-600 text-white rounded-md
-                                        hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-1"></i>
-                                Filter
-                            </button>
+                            <div class="flex items-end gap-3">
+                                <!-- Filter -->
+                                <button type="submit"
+                                        id="search-btn"
+                                        class="h-9 px-4 bg-indigo-600 text-white rounded-md
+                                            hover:bg-indigo-700">
+                                    <i class="fas fa-search mr-1"></i>
+                                    Search
+                                </button>
 
-                            <!-- Reset -->
-                            <button type="button"
-                                    id="reset-filter"
-                                    class="h-9 px-4 bg-gray-200 text-gray-700 rounded-md
-                                        hover:bg-gray-300">
-                                Reset
-                            </button>
-
-                        </div>
+                                <!-- Reset -->
+                                <a href="{{ route('invoices') }}"
+                                class="h-9 pt-2 px-4 bg-gray-200 text-gray-700 rounded-md
+                                            hover:bg-gray-300">
+                                    Clear
+                                </a>
+                            </div>
+                        </form>
 
                     </div>
 
