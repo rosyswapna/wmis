@@ -40,8 +40,12 @@
                 {{ $header }}
             </h2>
 
+            
+
             {{-- User --}}
-            <div class="flex items-center">
+            <div class="flex items-center"> 
+                
+                @include('layouts.notification')
 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">

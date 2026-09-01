@@ -8,6 +8,7 @@ use App\Http\Controllers\Accountant\ServiceController;
 use App\Http\Controllers\Accountant\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Accountant\ReportController;
+use App\Http\Controllers\NotificationController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
+
+    Route::get('/notifications',[NotificationController::class, 'notifications'])->name('notifications');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markNotificationAsRead'])->name('notifications.read');
 });
 
 
@@ -86,7 +90,11 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
     Route::get('/accountant/reports/workers', [ReportController::class, 'workers'])->name('reports.workers');
 
     Route::get('/accountant/reports/workers/export', [ReportController::class, 'exportWorkers'])->name('reports.workers.export');
-    
+    Route::get('/reports/workers/export', [ReportController::class, 'exportWorkers'])->name('reports.workers.export');
+
+    Route::get('/reports/workers/export/{id}/download/{notification}',[ReportController::class,'downloadWorkersExport']
+)->name('reports.workers.download');
+
 });
 
 

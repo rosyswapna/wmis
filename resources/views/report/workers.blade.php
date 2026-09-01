@@ -45,14 +45,16 @@
                                 <i class="fas fa-filter"></i>
                             </button>
 
-                            <button type="button"
-                                    class="inline-flex items-center justify-center
-                                        w-9 h-9 rounded-md px-4 py-2
-                                        text-gray-600 hover:text-gray-900
-                                        hover:bg-gray-100">
+                            <a href="{{ route('reports.workers.export', request()->query()) }}"
+                            class="inline-flex items-center justify-center
+                                    w-9 h-9 rounded-md px-4 py-2
+                                    text-gray-600 hover:text-gray-900
+                                    hover:bg-gray-100"
+                            title="Export Excel">
 
                                 <i class="fas fa-file-export"></i>
-                            </button>
+
+                            </a>
                         </div>
                     </div>
 
