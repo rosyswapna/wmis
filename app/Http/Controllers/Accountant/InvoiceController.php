@@ -140,9 +140,13 @@ class InvoiceController extends Controller
                 ->withErrors($validator)
                 ->withInput();        
         }else{
-            $validated = $validator->validated();            
+            $validated = $validator->validated();  
+            $validated['created_by'] = auth()->id();  
+            $validated['invoice_number'] = $invoice_number;  
+            $validated['invoice_number_prefix'] = $invoicePrefix;
+            $validated['invoice_number_suffix'] = $invoiceSuffix;      
             
-            DB::transaction(function () use ($validated, $invoice_number,$invoicePrefix,$invoiceSuffix) {            
+            DB::transaction(function () use ($validated) {            
                 
                 $discount = $validated['discount'] ?? 0;
                 $quantity = count($validated['items']);
@@ -154,9 +158,9 @@ class InvoiceController extends Controller
 
                 $invoice = Invoice::create([
                     'invoice_date' => $validated['invoice_date'],
-                    'invoice_number' => $invoice_number,
-                    'invoice_number_prefix' => $invoicePrefix ?? null,
-                    'invoice_number_suffix' => $invoiceSuffix ?? null,
+                    'invoice_number' => $validated['invoice_number'],
+                    'invoice_number_prefix' => $validated['invoice_number_prefix'],
+                    'invoice_number_suffix' => $validated['invoice_number_suffix'],
                     'due_date' => $validated['due_date'] ?? null,
                     'payment_status' => 'Unpaid',
                     'client_id' => $validated['client_id'],
@@ -168,6 +172,7 @@ class InvoiceController extends Controller
                     'discount' => $discount,
                     'total' => $total,
                     'status_id' => $statusId,
+                    'created_by' => $validated['created_by'],
                 ]);
 
                 foreach ($validated['items'] as $item) {
