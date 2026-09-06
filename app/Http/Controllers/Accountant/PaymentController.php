@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Services\PaymentListService;
 
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Hospital;
 use App\Models\PaymentInvoice;
 use App\Models\InvoiceStatus;
 use Maatwebsite\Excel\Facades\Excel;
@@ -179,7 +181,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Export invoices.
+     * Export payments.
      */
     public function export(Request $request)
     {
@@ -226,6 +228,35 @@ class PaymentController extends Controller
     }
 
     /**
+     * Print payment.
+     */
+    public function print($id)
+    {
+
+        $payment = Payment::findOrFail($id);
+        $payment->load([
+            'client',
+            'createdBy',
+            'invoices',
+        ]);
+
+        $hospital = Hospital::with([
+            'country',
+            'state',
+            'city',
+        ])->first();
+
+        $pdf = Pdf::loadView('payment.print', [
+            'payment' => $payment,
+            'hospital' => $hospital,
+        ]);
+
+        return $pdf->stream(
+            'receipt-' . $payment->reference_number . '.pdf'
+        );
+    }
+
+    /**
      * Generate payment reference number.
      */
     private function generateReferenceNumber(): string
@@ -238,7 +269,7 @@ class PaymentController extends Controller
             ->value('reference_number');
 
         if ($lastReference) {
-            $parts = explode('/', $lastReference);
+            $parts = explode('-', $lastReference);
 
             // R / 001 / 2026
             $lastNumber = (int) $parts[1];
