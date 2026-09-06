@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class WorkersReportExport implements FromQuery, WithHeadings, WithMapping
+class WorkersReportExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     protected Builder $query;
     protected array $headings;
@@ -42,5 +45,16 @@ class WorkersReportExport implements FromQuery, WithHeadings, WithMapping
         }
 
         return $mapKeys;
+    }
+
+    public function styles(Worksheet $sheet): array
+    {
+        return [
+            1 => [
+                'font' => [
+                    'bold' => true,
+                ],
+            ],
+        ];
     }
 }

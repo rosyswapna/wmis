@@ -15,6 +15,9 @@ use App\Services\Reports\WorkersReportService;
 use App\Models\ReportExport;
 use App\Jobs\ExportWorkersReportJob;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\WorkersReportExport;
+
 class ReportController extends Controller
 {
     protected WorkersReportService $workersReportService;
@@ -47,6 +50,46 @@ class ReportController extends Controller
      * Export workers report.
      */
     public function exportWorkers(Request $request)
+    {
+        $filters = $request->only([
+            'worker_name',
+            'date_from',
+            'date_to',
+        ]);        
+
+        // Same query used by the Workers Report page
+        $query = $this->workersReportService->query($filters);
+        $reportColumns = $this->workersReportService->columns();
+        $reportHeaders = array_values($reportColumns);
+        $reportDataKeys = array_keys($reportColumns);
+
+        $fileName = 'workers-report-' . now()->format('Y-m-d-His') . '.xlsx';
+        $filePath = 'export/workers/' . $fileName;
+
+        // Generate Excel file
+        Excel::store(
+            new WorkersReportExport($query, $reportHeaders, $reportDataKeys),
+            $filePath
+        );
+
+        $export = ReportExport::create([ 
+            'user_id' => auth()->id(), 
+            'type' => 'workers',
+            'status' => 'completed',
+            'file_path' => $filePath,
+            'error' => null,
+        ]);
+
+        return Storage::download(
+            $filePath,
+            $fileName
+        );
+    }
+
+    /**
+     * Export workers report.
+     */
+    public function exportWorkersByJob(Request $request)
     {
         $filters = $request->only([
             'worker_name',
