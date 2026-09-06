@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Invoices') }}
+                {{ __('Payments') }}
             </h2>            
         </div>
     </x-slot>
@@ -25,7 +25,7 @@
                     <div class="flex items-center justify-between mb-5">
                         <div>
                             <h3 class="text-lg font-medium text-gray-900">
-                                Invoices ({{ $invoices->total() }})
+                                Payments ({{ $payments->total() }})
                             </h3>
 
                             <p class="mt-1 text-sm text-gray-600">
@@ -56,7 +56,7 @@
                             </a>
                             
 
-                            <x-table-link href="{{ route('invoices.create') }}">
+                            <x-table-link href="{{ route('payments.create') }}">
                                 {{ __('+ Create New') }}
                             </x-table-link>
 
@@ -69,7 +69,7 @@
                         x-cloak
                         class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
 
-                        <form method="GET" action="{{ route('invoices') }}">
+                        <form method="GET" action="{{ route('payments') }}">
 
                             <div class="flex items-end gap-3">
 
@@ -115,25 +115,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-
-                                <!-- Status -->
-                                <div class="w-48">
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Status
-                                    </label>
-
-                                    <select id="status_id" name="status_id"
-                                            class="mt-1 block w-full h-9 rounded-md border-gray-300">
-                                        <option value="">Select Status</option>
-                                        @foreach($statuses as $status)
-                                            <option value="{{ $status->id }}"
-                                                {{ request('status_id') == $status->id ? 'selected' : '' }}
-                                            >
-                                                {{ $status->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                               
                             </div>
 
                             <div class="flex items-end gap-3">
@@ -157,7 +139,7 @@
 
                     </div>
 
-                    @if ($invoices->count())
+                    @if ($payments->count())
 
                         <div class="overflow-x-auto">
 
@@ -169,7 +151,7 @@
                                         <th class="px-6 py-3 text-left text-xs
                                                    font-medium text-gray-500
                                                    uppercase tracking-wider">
-                                            Invoice Number
+                                            Reference Number
                                         </th>
 
                                         <th class="px-6 py-3 text-left text-xs
@@ -178,39 +160,10 @@
                                             Client
                                         </th>
 
-                                        <th class="px-6 py-3 text-left text-xs
-                                                   font-medium text-gray-500
-                                                   uppercase tracking-wider">
-                                            Service
-                                        </th>
-
                                         <th class="px-6 py-3 text-right text-xs
                                                    font-medium text-gray-500
                                                    uppercase tracking-wider">
-                                            Quantity
-                                        </th>
-
-                                        <th class="px-6 py-3 text-right text-xs
-                                                   font-medium text-gray-500
-                                                   uppercase tracking-wider">
-                                            VAT
-                                        </th>
-
-                                        <th class="px-6 py-3 text-right text-xs
-                                                   font-medium text-gray-500
-                                                   uppercase tracking-wider">
-                                            Total
-                                        </th>
-                                        <th class="px-6 py-3 text-right text-xs
-                                                   font-medium text-gray-500
-                                                   uppercase tracking-wider">
-                                            STATUS
-                                        </th>
-
-                                        <th class="px-6 py-3 text-right text-xs
-                                                   font-medium text-gray-500
-                                                   uppercase tracking-wider">
-                                            PAYMENT STATUS
+                                            Total Paid
                                         </th>
 
                                         <th class="px-6 py-3 text-right text-xs
@@ -224,19 +177,19 @@
 
                                 <tbody class="bg-white divide-y divide-gray-200">
 
-                                    @foreach ($invoices as $invoice)
+                                    @foreach ($payments as $payment)
 
                                         <tr class="hover:bg-gray-50">
 
-                                            {{-- Invoice Number --}}
+                                            {{-- Payment Number --}}
                                             <td class="px-6 py-4 whitespace-nowrap">
 
                                                 <div class="text-sm font-medium text-gray-900">
-                                                    {{ $invoice->invoice_number }}
+                                                    {{ $payment->reference_number }}
                                                 </div>
 
                                                 <div class="text-xs text-gray-500">
-                                                    {{ $invoice->invoice_date?->format('d M Y') }}
+                                                    {{ $payment->payment_date?->format('d M Y') }}
                                                 </div>
 
                                             </td>
@@ -245,105 +198,32 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
 
                                                 <div class="text-sm text-gray-900">
-                                                    {{ $invoice->client?->name ?? $invoice->client?->name ?? '-' }}
+                                                    {{ $payment->client?->name ?? $payment->client?->name ?? '-' }}
                                                 </div>
 
                                             </td>
-
-                                            {{-- Service --}}
-                                            <td class="px-6 py-4">
-
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $invoice->service?->name ?? $invoice->service?->name ?? '-' }}
-                                                </div>
-
-                                            </td>
-
-                                            {{-- Quantity --}}
-                                            <td class="px-6 py-4 whitespace-nowrap
-                                                       text-right text-sm text-gray-600">
-
-                                                {{ $invoice->quantity ?? $invoice->items->sum('quantity') }}
-
-                                            </td>
-
-                                            {{-- VAT --}}
-                                            <td class="px-6 py-4 whitespace-nowrap
-                                                       text-right text-sm text-gray-600">
-
-                                                AED {{ number_format($invoice->vat, 2) }}
-
-                                            </td>                                            
-
                                             {{-- Total --}}
                                             <td class="px-6 py-4 whitespace-nowrap
                                                        text-right">
 
                                                 <span class="text-sm font-semibold text-gray-900">
-                                                    AED {{ number_format($invoice->total, 2) }}
+                                                    AED {{ number_format($payment->total_paid, 2) }}
                                                 </span>
 
-                                            </td>
-
-                                            {{-- Status --}}
-                                            <td class="px-6 py-4 whitespace-nowrap">
-
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $invoice->status?->name ?? $invoice->status?->name ?? '-' }}
-                                                </div>
-
-                                            </td>
-                                            {{-- Payment Status --}}
-                                            <td class="px-6 py-4 whitespace-nowrap">
-
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $invoice->payment_status }}
-                                                </div>
-
-                                            </td>
+                                            </td>                                           
 
                                             {{-- Actions --}}
                                             <td class="px-6 py-4 whitespace-nowrap
                                                        text-right text-sm">
 
                                                 {{-- Print --}}
-                                                <x-table-row-link
-                                                    class="text-blue-600"
-                                                    href="{{ route('invoices.print', $invoice->id) }}"
-                                                    title="Print Invoice"
+                                                <a
+                                                    href="{{ route('payments.print', $payment->id) }}"
+                                                    target="_blank"
+                                                    class="text-gray-600 hover:text-gray-900 mr-3"
                                                 >
-                                                    <i class="fa fa-print"></i>
-                                                </x-table-row-link>                                             
-
-                                                {{-- Edit --}}
-                                                <x-table-row-link
-                                                    class="text-green-600"
-                                                    href="{{ route('invoices.edit', $invoice->id) }}"
-                                                    title="Edit Invoice"
-                                                >
-                                                    <i class="fa fa-pencil"></i>
-                                                </x-table-row-link> 
-                                                
-
-                                                {{-- Cancel --}}                                                
-                                                <form
-                                                    action="{{ route('invoices.cancel', $invoice->id) }}"
-                                                    method="POST"
-                                                    class="inline"
-                                                    onsubmit="return confirm('Are you sure you want to cancel this invoice?')"
-                                                >
-
-                                                    @csrf
-                                                    @method('DELETE')
-
-                                                    <button
-                                                        type="submit"
-                                                        class="text-red-600 hover:text-red-900"
-                                                    >
-                                                        <i class="fa fa-times-circle"></i>
-                                                    </button>
-
-                                                </form>
+                                                    Print
+                                                </a>
 
                                             </td>
 
@@ -359,7 +239,7 @@
 
                         {{-- Pagination --}}
                         <div class="mt-6">
-                            {{ $invoices->links() }}
+                            {{ $payments->links() }}
                         </div>
 
                     @else
@@ -367,15 +247,15 @@
                         <div class="text-center py-12">
 
                             <p class="text-sm text-gray-500">
-                                No invoices found.
+                                No payments found.
                             </p>
 
                             <a
-                                href="{{ route('invoices.create') }}"
+                                href="{{ route('payments.create') }}"
                                 class="inline-flex mt-4 text-sm text-indigo-600
                                        hover:text-indigo-900"
                             >
-                                Create your first invoice
+                                Create your first payment
                             </a>
 
                         </div>

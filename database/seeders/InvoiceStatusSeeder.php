@@ -12,7 +12,7 @@ class InvoiceStatusSeeder extends Seeder
         $statuses = [
             'Draft',
             'New Invoice',
-            'Processed',
+            'Processed',            
             'Cancelled',
         ];
 

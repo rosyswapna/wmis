@@ -113,6 +113,17 @@
                 </span>
             </a>
 
+            <!-- Payments -->
+            <a href="{{ route('payments') }}"
+               class="flex items-center px-3 py-3 rounded-md
+                      text-white hover:bg-white/10">
+                <span class="w-5 text-center"><i class="fas fa-dollar"></i></span>
+                <span x-show="sidebarOpen"
+                      class="ml-3 whitespace-nowrap">
+                    Payments
+                </span>
+            </a>
+
 
             <!-- Reports -->
             <div x-data="{ reportsOpen: {{ request()->routeIs('reports.*') ? 'true' : 'false' }} }">

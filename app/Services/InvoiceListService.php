@@ -38,7 +38,8 @@ class InvoiceListService
                 'quantity', 
                 'vat', 
                 'total', 
-                'status_id', ])          
+                'status_id',
+                'payment_status' ])          
             ->when(
                 !empty($filters['date_from']),
                 fn ($query) =>

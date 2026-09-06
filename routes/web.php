@@ -9,6 +9,7 @@ use App\Http\Controllers\Accountant\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Accountant\ReportController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Accountant\PaymentController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +96,12 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
 
     Route::get('/reports/workers/export/{id}/download/{notification}',[ReportController::class,'downloadWorkersExport']
 )->name('reports.workers.download');
+
+    Route::get('/accountant/payments', [PaymentController::class, 'index'])->name('payments');
+    Route::get('/accountant/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/accountant/payments', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/accountant/payments/print/{id}', [PaymentController::class, 'print'])->name('payments.print');
+    Route::get('/accountant/payments/client/{client}/unpaid-invoices',[PaymentController::class, 'getUnpaidInvoices'])->name('payments.unpaid-invoices');
 
 });
 
