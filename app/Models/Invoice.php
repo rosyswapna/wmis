@@ -75,4 +75,13 @@ class Invoice extends Model
                 ->sum('payment_invoice.amount')
         );
     }
+
+    public function invoice_number_full()
+    {
+        return implode('-', array_filter([
+            $this->invoice_number_prefix,
+            $this->invoice_number,
+            $this->invoice_number_suffix,
+        ], fn ($value) => $value !== null && $value !== ''));
+    }
 }

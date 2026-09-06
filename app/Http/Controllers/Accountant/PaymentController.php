@@ -153,9 +153,10 @@ class PaymentController extends Controller
                 ->get()
                 ->map(function ($invoice) {
                     $paid = $invoice->payments()->sum('payment_invoice.amount')?? 0;
+                    $invoice_number = $invoice->invoice_number_full();
                     return [
                         'id' => $invoice->id,
-                        'invoice_number' => $invoice->invoice_number,
+                        'invoice_number' => $invoice_number,
                         'invoice_date' => $invoice->invoice_date->format('d-m-Y'),
                         'total' => $invoice->total,
                         'paid' => $paid,
