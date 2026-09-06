@@ -26,7 +26,28 @@ class DashboardController extends Controller
         }
         
         return response()->json([
-            'client_count' => Client::count(),
+            'outstanding_amount' => Invoice::join(
+                    'invoice_status',
+                    'invoice_status.id',
+                    '=',
+                    'invoice.status_id'
+                )
+                ->whereIn('invoice_status.name', ['Processed', 'New Invoice'])
+                ->whereIn('invoice.payment_status', ['Unpaid', 'Partially Paid'])
+                ->selectRaw('
+                    SUM(
+                        invoice.total -
+                        COALESCE(
+                            (
+                                SELECT SUM(payment_invoice.amount)
+                                FROM payment_invoice
+                                WHERE payment_invoice.invoice_id = invoice.id
+                            ),
+                            0
+                        )
+                    ) AS outstanding_amount
+                ')
+                ->value('outstanding_amount'),
 
             'draft_count' => Invoice::join(
                     'invoice_status',

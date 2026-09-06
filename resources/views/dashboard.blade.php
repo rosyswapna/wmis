@@ -21,8 +21,18 @@
 
                         <div class="flex-1 min-w-0">
                             <x-dashboard-tile
-                                title="Clients"
-                                id="client-count"
+                                title="Total Invoice"
+                                id="total-invoice"
+                                icon="fas fa-file-invoice-dollar"
+                                icon-bg="bg-yellow-100"
+                                icon-color="text-yellow-600"
+                            />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <x-dashboard-tile
+                                title="Outstanding Amount"
+                                id="outstanding-amount"
                                 icon="fas fa-users"
                                 icon-bg="bg-blue-100"
                                 icon-color="text-blue-600"
@@ -31,7 +41,7 @@
 
                         <div class="flex-1 min-w-0">
                             <x-dashboard-tile
-                                title="Drafts Pending"
+                                title="Invoice Drafts"
                                 id="draft-count"
                                 icon="fas fa-hand-holding-medical"
                                 icon-bg="bg-green-100"
@@ -49,15 +59,7 @@
                             />
                         </div>
 
-                        <div class="flex-1 min-w-0">
-                            <x-dashboard-tile
-                                title="Total Invoice"
-                                id="total-invoice"
-                                icon="fas fa-file-invoice-dollar"
-                                icon-bg="bg-yellow-100"
-                                icon-color="text-yellow-600"
-                            />
-                        </div>
+                        
 
                     </div>
 
