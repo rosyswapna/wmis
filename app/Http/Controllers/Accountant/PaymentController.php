@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 use App\Services\PaymentListService;
 
@@ -14,6 +15,8 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentInvoice;
 use App\Models\InvoiceStatus;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PaymentExport;
 
 
 class PaymentController extends Controller
@@ -173,6 +176,53 @@ class PaymentController extends Controller
         }
 
         return response()->json($invoices);
+    }
+
+    /**
+     * Export invoices.
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only([
+            'client_id',
+            'date_from',
+            'date_to',
+        ]);
+
+        // Use the same query logic as invoice listing
+        $query = $this->paymentListService->query($filters);
+
+        $reportHeaders = [
+            'Reference Number',
+            'Payment Date',
+            'Client',
+            'Total Paid',
+        ];
+
+        $reportDataKeys = [
+            'reference_number',
+            'payment_date',
+            'client.name',
+            'total_paid',
+        ];
+
+        $fileName = 'payments-' . now()->format('Y-m-d-His') . '.xlsx';
+
+        $filePath = 'export/payments/' . $fileName;
+
+        Excel::store(
+            new PaymentExport(
+                $query,
+                $reportHeaders,
+                $reportDataKeys
+            ),
+            $filePath
+        );
+
+        return Storage::download(
+            $filePath,
+            $fileName
+        );
     }
 
     /**

@@ -45,7 +45,7 @@
                                 <i class="fas fa-filter"></i>
                             </button>
 
-                            <a href="{{ route('invoices.export', request()->query()) }}"
+                            <a href="{{ route('payments.export', request()->query()) }}"
                             class="inline-flex items-center justify-center
                                     w-9 h-9 rounded-md px-4 py-2
                                     text-gray-600 hover:text-gray-900

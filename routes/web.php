@@ -102,6 +102,7 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
     Route::post('/accountant/payments', [PaymentController::class, 'store'])->name('payments.store');
     Route::get('/accountant/payments/print/{id}', [PaymentController::class, 'print'])->name('payments.print');
     Route::get('/accountant/payments/client/{client}/unpaid-invoices',[PaymentController::class, 'getUnpaidInvoices'])->name('payments.unpaid-invoices');
+    Route::get('/accountant/payments/export', [PaymentController::class, 'export'])->name('payments.export');
 
 });
 
