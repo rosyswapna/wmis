@@ -252,7 +252,7 @@ class PaymentController extends Controller
         ]);
 
         return $pdf->stream(
-            'receipt-' . $payment->reference_number . '.pdf'
+            'receipt-' . 12 . '.pdf'
         );
     }
 
@@ -264,7 +264,7 @@ class PaymentController extends Controller
         $year = now()->year;
 
         $lastReference = DB::table('payment')
-            ->where('reference_number', 'like', "R/%/%")
+            ->where('reference_number', 'like', "R-%-%")
             ->orderByDesc('id')
             ->value('reference_number');
 

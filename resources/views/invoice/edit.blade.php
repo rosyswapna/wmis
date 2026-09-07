@@ -112,7 +112,7 @@
                         <!-- Invoice Number -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">                            
                             <div>
-                                <x-input-label value="Unit Price"/>
+                                <x-input-label value="Unit Price (Inclusive VAT 5%)"/>
 
                                 <x-text-input
                                     id="unit_price"
@@ -205,7 +205,7 @@
                                         </td>
 
                                         <td class="border p-3 text-right">
-                                            <span id="total_quantity">1</span>
+                                            <span id="total_quantity">{{$invoice->quantity}}</span>
                                         </td>
                                     </tr>
 
@@ -215,21 +215,21 @@
                                         </td>
 
                                         <td class="border p-3 text-right">
-                                            <span id="net_total">0.00</span>
+                                            <span id="net_total">{{$invoice->net_amount}}</span>
                                         </td>
                                     </tr>
 
                                     <tr>
                                         <td colspan="1" class="border p-3 text-right">
-                                            VAT (5%)
+                                            Inclusive VAT (5%)
                                         </td>
 
                                         <td class="border p-3 text-right">
-                                            <span id="vat_total">0.00</span>
+                                            <span id="vat_total">{{$invoice->vat}}</span>
                                         </td>
                                     </tr>
 
-                                    <tr>
+                                    <!-- <tr>
                                         <td colspan="1" class="border p-3 text-right">
                                             Discount
                                         </td>
@@ -239,9 +239,9 @@
                                                 step="0.01"
                                                 name="discount"
                                                 class="mt-1 w-32 text-right inline-block"
-                                                value="0"/>
+                                                value="{{$invoice->discount}}"/>
                                         </td>
-                                    </tr>
+                                    </tr> -->
 
                                     <tr class="text-lg">
                                         <td colspan="1" class="border p-3 text-right">
@@ -249,7 +249,7 @@
                                         </td>
 
                                         <td class="border p-3 text-right">
-                                            <span id="grand_total">0.00</span>
+                                            <span id="grand_total">{{$invoice->total}}</span>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -353,23 +353,26 @@ document.addEventListener('draft-btn', function(e){
 document.getElementById('unit_price')
     .addEventListener('input', calculateTotals);
 
-document.querySelector('[name="discount"]')
-    .addEventListener('input', calculateTotals);
+// document.querySelector('[name="discount"]')
+//     .addEventListener('input', calculateTotals);
 
 function calculateTotals() { 
 
     let quatity =
-        document.querySelectorAll(
+        parseFloat(document.querySelectorAll(
             '#workerTable input[name*="[worker_name]"]'
-        ).length;
+        ).length);
     let unitPrice =
         parseFloat(document.getElementById('unit_price').value) || 0;
-    let discount =
-        parseFloat(document.querySelector('[name="discount"]').value) || 0;
+    // let discount =
+    //     parseFloat(document.querySelector('[name="discount"]').value) || 0;
+    let discount = 0;
 
-    let netTotal = unitPrice * quatity;
-    let vat = netTotal * 0.05;
-    let grand_total = netTotal + vat - discount;
+    let total = unitPrice * quatity;
+    let netTotal = unitPrice / 1.05 * quatity;
+    let vat = total - netTotal;     
+    let grand_total = netTotal+vat - discount;
+
     document.getElementById('total_quantity').textContent = quatity;
     document.getElementById('net_total').textContent = netTotal.toFixed(2);
     document.getElementById('vat_total').textContent = vat.toFixed(2);

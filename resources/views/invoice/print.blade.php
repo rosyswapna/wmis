@@ -439,7 +439,7 @@
                     {{ number_format($invoice->quantity,0) }}
                 </td>
                 <td class="rate">
-                    {{ number_format($invoice->unit_price, 2) }}
+                    {{ number_format($invoice->rate, 2) }}
                 </td>
                 <td class="net">
                     {{ number_format($invoice->net_amount ?? $invoice->net_amount, 2) }}

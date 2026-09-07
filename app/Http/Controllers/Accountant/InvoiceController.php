@@ -95,11 +95,11 @@ class InvoiceController extends Controller
                 'numeric',
                 'min:0',
             ],            
-            'discount' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],            
+            // 'discount' => [
+            //     'nullable',
+            //     'numeric',
+            //     'min:0',
+            // ],            
             'items' => [
                 'required',
                 'array',
@@ -148,12 +148,12 @@ class InvoiceController extends Controller
             
             DB::transaction(function () use ($validated) {            
                 
-                $discount = $validated['discount'] ?? 0;
-                $quantity = count($validated['items']);
+                //$discount = $validated['discount'] ?? 0;
+                $discount = 0;
+                $quantity = count($validated['items']);                
                 $unit_price = $validated['unit_price'];
-                $net_amount = $unit_price * $quantity;
-                $vat = $net_amount * 5/100;
-                $total = ($net_amount + $vat) - $discount;
+                list($net_amount, $vat, $total) = $this->getCalculations($unit_price, $quantity, $discount);              
+                
                 $statusId = InvoiceStatus::where('name', 'New Invoice')->value('id');
 
                 $invoice = Invoice::create([
@@ -210,6 +210,7 @@ class InvoiceController extends Controller
     public function print($id)
     {
         $invoice = Invoice::findOrFail($id);
+        $invoice->rate = $invoice->unit_price/1.05;
 
         $hospital = Hospital::with([
             'country',
@@ -278,11 +279,11 @@ class InvoiceController extends Controller
                 'numeric',
                 'min:0',
             ],
-            'discount' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],            
+            // 'discount' => [
+            //     'nullable',
+            //     'numeric',
+            //     'min:0',
+            // ],            
             'items' => [
                 'required',
                 'array',
@@ -301,12 +302,11 @@ class InvoiceController extends Controller
             $invoice
         ) {
 
-            $discount = $validated['discount'] ?? 0;
-            $quantity = count($validated['items']);
+            //$discount = $validated['discount'] ?? 0;
+            $discount = 0;
+            $quantity = count($validated['items']);             
             $unit_price = $validated['unit_price'];
-            $net_amount = $unit_price * $quantity;
-            $vat = $net_amount * 5/100;
-            $total = ($net_amount + $vat) - $discount;
+            list($net_amount, $vat, $total) = $this->getCalculations($unit_price, $quantity, $discount);
 
             $updateData = [
                 'invoice_date' => $validated['invoice_date'],
@@ -376,7 +376,8 @@ class InvoiceController extends Controller
         $unit_price = ($request->unit_price)? $request->unit_price: 0;
         $net_amount = $unit_price*$quantity;
         $vat = $net_amount*5/100;
-        $discount = $request->discount ?? 0;
+        //$discount = $request->discount ?? 0;
+        $discount = 0;
         $total = $net_amount + $vat - $discount;
 
         $invoice = Invoice::create([
@@ -482,5 +483,20 @@ class InvoiceController extends Controller
         $nextNumber = $lastInvoice? $lastInvoice + 1: 1;
 
         return str_pad($nextNumber, 4,'0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Calculate totals
+     */
+    private function getCalculations($unit_price, $quantity, $discount)
+    {
+        
+        $total = $unit_price * $quantity;
+        $net_amount = $total / 1.05;
+        $vat = $total - $net_amount;       
+                                                      
+        $total -= $discount; 
+
+        return [$net_amount, $vat, $total];
     }
 }

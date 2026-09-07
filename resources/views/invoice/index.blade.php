@@ -311,6 +311,7 @@
                                                     class="text-blue-600"
                                                     href="{{ route('invoices.print', $invoice->id) }}"
                                                     title="Print Invoice"
+                                                    target="_blank"
                                                 >
                                                     <i class="fa fa-print"></i>
                                                 </x-table-row-link>                                             
@@ -320,6 +321,7 @@
                                                     class="text-green-600"
                                                     href="{{ route('invoices.edit', $invoice->id) }}"
                                                     title="Edit Invoice"
+                                                    target="_self"
                                                 >
                                                     <i class="fa fa-pencil"></i>
                                                 </x-table-row-link> 

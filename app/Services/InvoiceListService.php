@@ -76,7 +76,7 @@ class InvoiceListService
                         $filters['status_id']
                     )
             )
-           ->orderBy('invoice_date', 'desc');
+           ->orderBy('id', 'desc');
     }
     
 }
