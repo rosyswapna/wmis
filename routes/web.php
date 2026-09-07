@@ -89,13 +89,16 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
     Route::post('/accountant/invoices/draft', [InvoiceController::class, 'draft'])->name('invoices.draft');
     Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
     
+    //Reports -Workers
     Route::get('/accountant/reports/workers', [ReportController::class, 'workers'])->name('reports.workers');
-
     Route::get('/accountant/reports/workers/export', [ReportController::class, 'exportWorkers'])->name('reports.workers.export');
     Route::get('/reports/workers/export', [ReportController::class, 'exportWorkers'])->name('reports.workers.export');
-
     Route::get('/reports/workers/export/{id}/download/{notification}',[ReportController::class,'downloadWorkersExport']
 )->name('reports.workers.download');
+
+    //Reports - InvoicePayments
+    Route::get('/accountant/reports/invoicePayments', [ReportController::class, 'invoicePayments'])->name('reports.invoicePayments');
+    Route::get('/accountant/reports/invoicePayments/export', [ReportController::class, 'exportInvoicePayments'])->name('reports.invoicePayments.export');
 
     Route::get('/accountant/payments', [PaymentController::class, 'index'])->name('payments');
     Route::get('/accountant/payments/create', [PaymentController::class, 'create'])->name('payments.create');

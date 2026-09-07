@@ -175,6 +175,23 @@
 
                     </a>
 
+                    <!-- Workers Report -->
+                    <a href="{{ route('reports.invoicePayments') }}"
+                    class="flex items-center px-3 py-2 rounded-md
+                            text-sm text-white/80
+                            hover:bg-white/10 hover:text-white
+                            {{ request()->routeIs('reports.invoicePayments')
+                                    ? 'bg-white/10 text-white'
+                                    : '' }}">
+
+                        
+
+                        <span class="ml-3 whitespace-nowrap">
+                            Invoice Payments Report
+                        </span>
+
+                    </a>
+
                 </div>
 
             </div>            

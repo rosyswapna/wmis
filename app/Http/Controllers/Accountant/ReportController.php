@@ -12,18 +12,26 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Notifications\DatabaseNotification;
 
 use App\Services\Reports\WorkersReportService;
+use App\Services\Reports\InvoicePaymentReportService;
+
 use App\Models\ReportExport;
 use App\Jobs\ExportWorkersReportJob;
 
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\WorkersReportExport;
+use App\Exports\CommonReportExport;
+
 
 class ReportController extends Controller
 {
     protected WorkersReportService $workersReportService;
-    public function __construct(WorkersReportService $workersReportService)
+    protected InvoicePaymentReportService $invoicePaymentReportService;
+
+    public function __construct(
+        WorkersReportService $workersReportService, 
+        InvoicePaymentReportService $invoicePaymentReportService)
     {
         $this->workersReportService = $workersReportService;
+        $this->invoicePaymentReportService = $invoicePaymentReportService;
     }
 
     /**
@@ -63,12 +71,12 @@ class ReportController extends Controller
         $reportHeaders = array_values($reportColumns);
         $reportDataKeys = array_keys($reportColumns);
 
-        $fileName = 'workers-report-' . now()->format('Y-m-d-His') . '.xlsx';
+        $fileName = 'workers-report-' . now()->format('Ymd-His') . '.xlsx';
         $filePath = 'export/workers/' . $fileName;
 
         // Generate Excel file
         Excel::store(
-            new WorkersReportExport($query, $reportHeaders, $reportDataKeys),
+            new CommonReportExport($query, $reportHeaders, $reportDataKeys),
             $filePath
         );
 
@@ -146,13 +154,62 @@ class ReportController extends Controller
         );
     }
 
-    public function styles(Worksheet $sheet) { 
-        return [ 
-            1 => [ 
-                'font' => [ 
-                    'bold' => true, 
-                ], 
-                ], 
-        ]; 
+    /**
+     * Display workers report.
+     */
+    public function invoicePayments(Request  $request)
+    {
+
+        $filters = $request->only([
+                'invoice_number',
+                'date_from',
+                'date_to',
+            ]);
+        $reportColumns = $this->invoicePaymentReportService->columns();
+        $reportData = $this->invoicePaymentReportService
+            ->query($filters)
+            ->paginate(20)
+            ->withQueryString();        
+        
+        return view('report.invoicePayments', compact('reportColumns','reportData'));
+    }
+    /**
+     * Export workers report.
+     */
+    public function exportInvoicePayments(Request $request)
+    {
+        $filters = $request->only([
+            'invoice_number',
+            'date_from',
+            'date_to',
+        ]);        
+
+        // Same query used by the Workers Report page
+        $query = $this->invoicePaymentReportService->query($filters);
+        $reportColumns = $this->invoicePaymentReportService->columns();
+        $reportHeaders = array_values($reportColumns);
+        $reportDataKeys = array_keys($reportColumns);
+
+        $fileName = 'payments-report-' . now()->format('Ymd-His') . '.xlsx';
+        $filePath = 'export/invoicePayments/' . $fileName;
+
+        // Generate Excel file
+        Excel::store(
+            new CommonReportExport($query, $reportHeaders, $reportDataKeys),
+            $filePath
+        );
+
+        $export = ReportExport::create([ 
+            'user_id' => auth()->id(), 
+            'type' => 'invoicePayments',
+            'status' => 'completed',
+            'file_path' => $filePath,
+            'error' => null,
+        ]);
+
+        return Storage::download(
+            $filePath,
+            $fileName
+        );
     }
 }

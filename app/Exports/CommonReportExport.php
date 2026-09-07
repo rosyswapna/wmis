@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class WorkersReportExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class CommonReportExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     protected Builder $query;
     protected array $headings;
