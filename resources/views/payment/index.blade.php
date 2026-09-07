@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Payments') }}
+                {{ __('Receipts') }}
             </h2>            
         </div>
     </x-slot>
@@ -25,7 +25,7 @@
                     <div class="flex items-center justify-between mb-5">
                         <div>
                             <h3 class="text-lg font-medium text-gray-900">
-                                Payments ({{ $payments->total() }})
+                                Receipts ({{ $payments->total() }})
                             </h3>
 
                             <p class="mt-1 text-sm text-gray-600">

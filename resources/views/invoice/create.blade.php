@@ -147,14 +147,29 @@
 
                                 <thead>
                                     <tr class="bg-gray-100">
+                                        <th class="border p-2">EMR Number</th>
                                         <th class="border p-2">Worker Name</th>
                                         <th class="border p-2">Action</th>
                                     </tr>
                                 </thead>
 
-                                <tbody id="workerTable">
+                                <!-- <tbody id="workerTable">
 
                                     <tr>
+                                        <td class="border p-2">
+                                            <input
+                                                type="text"
+                                                name="items[0][emr_number]"
+                                                class="w-full border-gray-300 rounded"
+                                                required
+                                            >
+                                            <input
+                                                type="hidden"
+                                                name="items[0][worker_id]"
+                                                class="w-full border-gray-300 rounded"
+                                                required
+                                            >
+                                        </td>
                                         <td class="border p-2">
                                             <input
                                                 type="text"
@@ -165,6 +180,41 @@
                                         </td>
 
                                         <td class="border p-2 text-center">
+                                            -
+                                        </td>
+                                    </tr>
+
+                                </tbody> -->
+                                <tbody id="workerTable">
+
+                                    <tr class="worker-row">
+                                        <td class="border p-2">
+                                            <input
+                                                type="text"
+                                                name="items[0][emr_number]"
+                                                class="worker-emr w-full border-gray-300 rounded"
+                                                autocomplete="off"
+                                                required
+                                                data-worker-url="{{ route('worker.by-emr', ['emrNumber' => '__EMR__']) }}"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="items[0][worker_id]"
+                                                class="worker-id"
+                                            >
+                                        </td>
+
+                                        <td class="border p-2">
+                                            <input
+                                                type="text"
+                                                name="items[0][worker_name]"
+                                                class="worker-name w-full border-gray-300 rounded"
+                                                required
+                                            >
+                                        </td>
+
+                                        <td class="border p-2 text-center worker-status">
                                             -
                                         </td>
                                     </tr>
@@ -266,12 +316,28 @@ let row = 1;
 document.getElementById('addWorker').addEventListener('click', function () {
 
     let html = `
-        <tr>
+        <tr class="worker-row">
+            <td class="border p-2">
+                <input
+                    type="text"
+                    name="items[${row}][emr_number]"
+                    class="worker-emr w-full border-gray-300 rounded"
+                    autocomplete="off"
+                    required
+                    data-worker-url="{{ route('worker.by-emr', ['emrNumber' => '__EMR__']) }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="items[${row}][worker_id]"
+                    class="worker-id"
+                >
+            </td>
             <td class="border p-2">
                 <input
                     type="text"
                     name="items[${row}][worker_name]"
-                    class="w-full border-gray-300 rounded"
+                    class="worker-name w-full border-gray-300 rounded"
                     required>
             </td>
 
@@ -370,6 +436,107 @@ document.getElementById('draft-btn').addEventListener('click', async function ()
         button.innerText = 'Draft Invoice';
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+
+
+    document.addEventListener('blur', function (e) {
+
+        if (
+            !e.target.classList.contains('worker-emr') ||
+            e.target.value.trim() === ''
+        ) {
+            return;
+        }
+
+        const currentInput = e.target;
+        const currentEmr = currentInput.value.trim();
+
+        // Check duplicate EMR in the current invoice
+        const duplicate = [...document.querySelectorAll('.worker-emr')]
+            .some(input =>
+                input !== currentInput &&
+                input.value.trim() === currentEmr
+            );
+
+        if (duplicate) {
+            alert(`EMR number ${currentEmr} is already added.`);
+
+            currentInput.value = '';
+            currentInput.focus();
+
+            return;
+        }
+
+        // Lookup worker
+        findWorker(currentInput);
+
+    }, true);
+});
+
+
+function findWorker(emrInput)
+{
+    const row = emrInput.closest('.worker-row');
+
+    const nameInput = row.querySelector('.worker-name');
+    const workerId = row.querySelector('.worker-id');
+
+    const emrNumber = emrInput.value.trim();
+
+    if (!emrNumber) {
+        return;
+    }
+
+    status.textContent = 'Searching...';
+    const workerUrl = emrInput.dataset.workerUrl.replace(
+        '__EMR__',
+        encodeURIComponent(emrNumber)
+    );
+
+    fetch(workerUrl,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector(
+                    'meta[name="csrf-token"]'
+                ).getAttribute('content')
+            }
+        }
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.found) {
+
+            workerId.value = data.worker.id;
+            nameInput.value = data.worker.name;
+
+            // Existing worker - don't allow changing name
+            nameInput.readOnly = true;
+
+            status.textContent = 'Existing worker';
+
+        } else {
+
+            workerId.value = '';
+
+            nameInput.value = '';
+            nameInput.readOnly = false;
+
+            status.textContent = 'New worker';
+
+            nameInput.focus();
+        }
+
+    })
+    .catch(error => {
+
+        console.error(error);
+
+        status.textContent = 'Unable to find worker';
+    });
+}
 
 
 function calculateTotals() { 

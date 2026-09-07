@@ -431,7 +431,7 @@
                     {{ $invoice->service->name }}<br>
                     <div class="workers">
                     @foreach($invoice->items as $index => $item)<br>                    
-                    {{$index+1}}.{{ $item->worker_name }}<br>
+                    {{$index+1}}.{{ $item->worker->name }}<br>
                     @endforeach
                     </div>
                 </td>

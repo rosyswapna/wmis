@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Accountant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\Worker;
 use App\Models\Invoice;
 use App\Models\InvoiceStatus;
 use App\Models\Service;
@@ -100,16 +101,29 @@ class InvoiceController extends Controller
             //     'numeric',
             //     'min:0',
             // ],            
-            'items' => [
+           'items' => [
                 'required',
                 'array',
                 'min:1',
             ],
-            'items.*.worker_name' => [
+
+            'items.*.emr_number' => [
                 'required',
                 'string',
+                'max:100',
+            ],
+
+            'items.*.worker_id' => [
+                'nullable',
+                'integer',
+                'exists:worker,id',
+            ],
+
+            'items.*.worker_name' => [
+                'required_if:items.*.worker_id,null',
+                'string',
                 'max:255',
-            ],            
+            ],         
         ];        
         $service = Service::findOrFail($request->service_id);                
         if (!$service->auto_invoice_number) {
@@ -146,7 +160,7 @@ class InvoiceController extends Controller
             $validated['invoice_number_prefix'] = $invoicePrefix;
             $validated['invoice_number_suffix'] = $invoiceSuffix;      
             
-            DB::transaction(function () use ($validated) {            
+            DB::transaction(function () use ($validated) {       
                 
                 //$discount = $validated['discount'] ?? 0;
                 $discount = 0;
@@ -175,11 +189,7 @@ class InvoiceController extends Controller
                     'created_by' => $validated['created_by'],
                 ]);
 
-                foreach ($validated['items'] as $item) {
-                    $invoice->items()->create([
-                        'worker_name' => $item['worker_name'],                    
-                    ]);
-                }
+                $this->createItems($validated['items'], $invoice);
             });
 
             return redirect()
@@ -284,23 +294,30 @@ class InvoiceController extends Controller
             //     'numeric',
             //     'min:0',
             // ],            
-            'items' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-            'items.*.worker_name' => [
+            'items.*.emr_number' => [
                 'required',
                 'string',
-                'max:255',
+                'max:100',
             ],
+
+            'items.*.worker_id' => [
+                'nullable',
+                'integer',
+                'exists:worker,id',
+            ],
+
+            'items.*.worker_name' => [
+                'required_if:items.*.worker_id,null',
+                'string',
+                'max:255',
+            ], 
             
         ]);
 
         DB::transaction(function () use (
             $validated,
             $invoice
-        ) {
+        ) {            
 
             //$discount = $validated['discount'] ?? 0;
             $discount = 0;
@@ -326,12 +343,7 @@ class InvoiceController extends Controller
 
             // Replace existing items
             $invoice->items()->delete();
-            foreach ($validated['items'] as $item) {              
-                $invoice->items()->create([
-                    'worker_name' =>
-                        $item['worker_name'],
-                ]);
-            }
+            $this->createItems($validated['items'], $invoice);
         });
 
         return redirect()
@@ -470,6 +482,29 @@ class InvoiceController extends Controller
     }
 
     /**
+     * Find worker with emr number
+     */
+    public function findByEmr(string $emrNumber)
+    {
+        $worker = Worker::where('emr_number', $emrNumber)->first();
+        
+        if (!$worker) {
+            return response()->json([
+                'found' => false,
+            ]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'worker' => [
+                'id' => $worker->id,
+                'name' => $worker->name,
+                'emr_number' => $worker->emr_number,
+            ],
+        ]);
+    }
+
+    /**
      * Generate invoice number.
      */
     private function generateInvoiceNumber(): string {
@@ -498,5 +533,24 @@ class InvoiceController extends Controller
         $total -= $discount; 
 
         return [$net_amount, $vat, $total];
+    }
+
+    private function createItems($items, $invoice)
+    {
+        foreach ($items as $item) {
+            if (!empty($item['worker_id'])) {
+                $worker = Worker::findOrFail(
+                    $item['worker_id']
+                );
+            } else {
+                $worker = Worker::create([
+                    'emr_number' => $item['emr_number'],
+                    'name' => $item['worker_name'],
+                ]);
+            }                    
+            $invoice->items()->create([
+                'worker_id' => $worker->id,                   
+            ]);
+        }
     }
 }

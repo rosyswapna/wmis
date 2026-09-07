@@ -120,7 +120,7 @@
                 <span class="w-5 text-center"><i class="fas fa-dollar"></i></span>
                 <span x-show="sidebarOpen"
                       class="ml-3 whitespace-nowrap">
-                    Payments
+                    Receipts
                 </span>
             </a>
 

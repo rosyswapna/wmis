@@ -15,9 +15,10 @@ class WorkersReportService
             ->join('client', 'client.id', '=', 'invoice.client_id')
             ->join('service', 'service.id', '=', 'invoice.service_id')
             ->join('invoice_status', 'invoice_status.id', '=', 'invoice.status_id')
-
+            ->join('worker', 'worker.id', '=', 'invoice_item.worker_id')
             ->select([
-                'invoice_item.worker_name',
+                'worker.emr_number as emr_number',
+                'worker.name as worker_name',
                 DB::raw("
                     CONCAT(
                         COALESCE(invoice_number_prefix, ''),
@@ -48,7 +49,7 @@ class WorkersReportService
                 !empty($filters['worker_name']),
                 fn ($query) =>
                     $query->where(
-                        'invoice_item.worker_name',
+                        'worker.name',
                         'like',
                         '%' . $filters['worker_name'] . '%'
                     )
