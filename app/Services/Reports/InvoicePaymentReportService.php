@@ -93,8 +93,8 @@ class InvoicePaymentReportService
         return [
             'invoice_number'=>'Invoice Number',
             'invoice_date' => 'Invoice Date',
-            'reference_number'=>'Receipt Number',
-            'invoice_amount' => 'invoice_amount',
+            'invoice_amount' => 'invoice amount',
+            'reference_number'=>'Receipt Number',            
             'payment_date'=>'Payment Date',
             'client_name'=>'Client',
             'paid_amount'=>'Amount Paid',
