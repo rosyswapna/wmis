@@ -161,7 +161,7 @@
 
                         <div class="overflow-x-auto">
 
-                            <table class="min-w-full divide-y divide-gray-200">
+                            <table class="min-w-full divide-y divide-gray-200 border">
 
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -226,7 +226,7 @@
 
                                     @foreach ($invoices as $invoice)
 
-                                        <tr class="hover:bg-gray-50">
+                                        <tr class="hover:bg-gray-50 ">
 
                                             {{-- Invoice Number --}}
                                             <td class="px-6 py-4 whitespace-nowrap">
