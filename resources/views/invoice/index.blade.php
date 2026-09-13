@@ -16,7 +16,6 @@
                     {{ session('success') }}
                 </div>
             @endif
-
             
             <div class="bg-white shadow-sm sm:rounded-lg">
 

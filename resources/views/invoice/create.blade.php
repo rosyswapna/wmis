@@ -284,6 +284,7 @@
                         <div class="mt-6 flex items-center gap-3">
 
                             <x-primary-button
+                                id="submit-btn"
                                 type="submit"
                                 name="status"
                                 value="New Invoice">
@@ -435,6 +436,18 @@ document.getElementById('draft-btn').addEventListener('click', async function ()
         button.disabled = false;
         button.innerText = 'Draft Invoice';
     }
+});
+
+document.getElementById('invoice-form').addEventListener('submit', function () {
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Prevent multiple submissions
+    if (submitBtn.disabled) {
+        return false;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Saving...';
 });
 
 document.addEventListener('DOMContentLoaded', function () {
